@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Green Ball Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      body {
+  background-color: #ffffff;
+}
+
+    
+      #ball {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-color: green;
+        border-radius: 25px;
+      }
+    
+      #square {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        background-color: rgb(104, 12, 12);
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    
+      .bullet {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: rgb(255, 0, 0);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgb(255, 0, 0);
+}
+
+
+#scoreDisplay {
+  font-family: Arial, sans-serif;
+  color: rgb(44, 42, 42);
+}
+
+
+      #gameOver {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: rgb(8, 8, 8);
+        text-shadow: 2px 2px 0px black;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ball"></div>
+    <div id="square"></div>
+    <div id="gameOver">You Died</div>
+
+    <script>
+      const ball = document.getElementById("ball");
+      const square = document.getElementById("square");
+      const bullets = [];
+      let score = 0;
+      let gameover = false;
+
+      // Create a new element to display the score
+      const scoreDisplay = document.createElement("div");
+      scoreDisplay.style.position = "absolute";
+      scoreDisplay.style.top = "20px";
+      scoreDisplay.style.left = "50%";
+      scoreDisplay.style.transform = "translateX(-50%)";
+      document.body.appendChild(scoreDisplay);
+
+      // Update the score display
+      function updateScoreDisplay() {
+        scoreDisplay.textContent = `Score: ${score}`;
+      }
+
+      // Increment the score every second
+      setInterval(() => {
+        if (!gameover) {
+          score++;
+          updateScoreDisplay();
+        }
+      }, 1250);
+
+      let ballPos = { x: window.innerWidth / 2 - 25, y: window.innerHeight / 2 - 25 };
+      let ballVel = { x: 0, y: 0 };
+      const gravity = 0.5;
+      const maxVelY = 10;
+
+      function updateBall() {
+        ballVel.y += gravity;
+        ballPos.x += ballVel.x;
+        ballPos.y += ballVel.y;
+        if (ballPos.y + 50 > window.innerHeight) {
+          ballPos.y = window.innerHeight - 50;
+          ballVel.y = 0;
+        }
+        if (ballPos.y < 0) {
+          ballPos.y = 0;
+          ballVel.y = 0;
+        }
+        if (ballPos.x + 50 > window.innerWidth) {
+          ballPos.x = window.innerWidth - 50;
+          ballVel.x = 0;
+        }
+        if (ballPos.x <window.innerWidth * 0.75 - 50) {
+ballPos.x = window.innerWidth * 0.75 - 50;
+}
+if (ballPos.x < 0) {
+ballPos.x = 0;
+ballVel.x = 0;
+}
+ball.style.left = `${ballPos.x}px`;
+ball.style.top = `${ballPos.y}px`;
+
+}
+
+
+  function fireBullet() {
+    const bullet = document.createElement("div");
+    bullet.classList.add("bullet");
+    bullet.style.left = `${window.innerWidth - 30}px`;
+    bullet.style.top = `${ballPos.y + 10}px`;
+    document.body.appendChild(bullet);
+    bullets.push(bullet);
+  }
+
+  setInterval(() => {
+    if (!gameover) {
+      fireBullet();
+    }
+  }, 1000);
+
+  function updateBullets() {
+    for (let i = 0; i < bullets.length; i++) {
+      const bullet = bullets[i];
+      const bulletPos = { x: parseInt(bullet.style.left), y: parseInt(bullet.style.top) };
+      bulletPos.x -= 10;
+      bullet.style.left = `${bulletPos.x}px`;
+      if (bulletPos.x < -30) {
+        bullet.remove();
+        bullets.splice(i, 1);
+        i--;
+      }
+      if (checkCollision(bulletPos, 30, ballPos, 50)) {
+        gameover = true;
+        document.getElementById("gameOver").style.display = "block";
+        break;
+      }
+    }
+  }
+
+  function checkCollision(pos1, size1, pos2, size2) {
+    return (
+      pos1.x < pos2.x + size2 &&
+      pos1.x + size1 > pos2.x &&
+      pos1.y < pos2.y + size2 &&
+      pos1.y + size1 > pos2.y
+    );
+  }
+
+  function update() {
+  if (!gameover) {
+    updateBall();
+    updateBullets();
+    requestAnimationFrame(update);
+  } else {
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+  }
+}
+
+
+  update();
+
+  function jump() {
+    ballVel.y = -maxVelY;
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.code === "Space") {
+      jump();
+    }
+  });
+</script>
+  </body>
+</html>
